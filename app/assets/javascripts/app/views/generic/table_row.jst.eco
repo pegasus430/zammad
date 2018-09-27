@@ -1,0 +1,79 @@
+<tr class="item<%= ' is-inactive' if @object.active is false %>" data-id="<%= @object.id %>">
+<% if @sortable: %>
+  <td class="table-draggable"><%- @Icon('draggable') %></td>
+<% end %>
+<% if @checkbox: %>
+  <td class="table-checkbox js-checkbox-field">
+    <label class="checkbox-replacement">
+      <input type="checkbox" value="<%= @object.id %>" name="bulk">
+      <%- @Icon('checkbox', 'icon-unchecked') %>
+      <%- @Icon('checkbox-checked', 'icon-checked') %>
+    </label>
+  </td>
+<% end %>
+<% if @radio: %>
+  <td class="table-radio">
+    <label class="radio-replacement">
+      <input type="radio" value="<%= @object.id %>" name="radio">
+      <%- @Icon('radio', 'icon-unchecked') %>
+      <%- @Icon('radio-checked', 'icon-checked') %>
+    </label>
+  </td>
+<% end %>
+<% for header in @headers: %>
+  <% value = @P(@object, header.name, @attributes, true) %>
+  <% if @callbacks: %>
+  <%   for attribute, callbacksAll of @callbacks: %>
+  <%     if attribute is header.name: %>
+  <%       for callback in callbacksAll: %>
+  <%         value = callback(value, @object, header, @headers) %>
+  <%       end %>
+  <%     end %>
+  <%   end %>
+  <% end %>
+  <td<% if header.parentClass: %> class="<%= header.parentClass %>"<% end %><% if header.title: %> title="<%= header.title %>"<% end %><% if header.align: %> style="text-align:<%= header.align %>"<% end %>>
+    <% if header.name is 'icon': %>
+      <%- @Icon('task-state', header.class) %>
+    <% else if header.icon: %>
+      <%- @Icon(header.icon) %>
+    <% else if header.name is 'action': %>
+      <% if @actions.length > 1: %>
+        <div class="dropdown dropdown--actions">
+          <div class="btn btn--table btn--text btn--secondary js-action" id="tableActions" data-toggle="dropdown">
+            <%- @Icon('overflow-button') %>
+          </div>
+          <ul class="dropdown-menu dropdown-menu-right js-table-action-menu" role="menu" aria-labelledby="tableActions">
+            <% for action in @actions: %>
+            <li role="presentation" class="<%= action.class %>" data-table-action="<%= action.name %>">
+              <a role="menuitem" tabindex="-1">
+                <span class="dropdown-iconSpacer">
+                  <%- @Icon(action.icon) %>
+                </span>
+                <%- @T(action.display) %>
+              </a>
+            <% end %>
+          </ul>
+        </div>
+      <% else: %>
+        <div class="btn btn--table btn--text btn--secondary <%= @actions[0].class %>" title="<%= @actions[0].display %>" data-table-action="<%= @actions[0].name %>">
+          <%- @Icon(@actions[0].icon) %>
+        </div>
+      <% end %>
+    <% else: %>
+      <% if header.link: %>
+        <a href="<%- header.link %>" <% if header.target: %>target="<%= header.target %>"<% end %>>
+      <% end %>
+      <% if header.raw: %>
+        <%- header.raw %>
+      <% else: %>
+        <% if header.class || header.data: %>
+        <span <% if header.class: %>class="<%= header.class %>"<% end %> <% if header.data: %><% for data_key, data_header of header.data: %>data-<%- data_key %>="<%= data_header %>" <% end %><% end %>>
+        <% end %>
+        <%- value %>
+        <% if header.class || header.data: %></span><% end %>
+      <% end %>
+      <% if header.link: %></a><% end %>
+    <% end %>
+  </td>
+<% end %>
+</tr>

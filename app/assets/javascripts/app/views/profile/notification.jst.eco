@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div class="page-header-title"><h1><%- @T('Notifications') %></h1></div>
+</div>
+
+<form class="page-content form--flexibleWidth">
+
+  <div class="settings-entry">
+    <table class="settings-list">
+      <thead>
+        <tr>
+          <th>
+          <th width="18%" style="text-align: center;"><%- @T('My Tickets') %>
+          <th width="18%" style="text-align: center;"><%- @T('Not Assigned') %>*
+          <th width="18%" style="text-align: center;"><%- @T('All Tickets') %>*
+          <th width="120px" class="settings-list-separator" style="text-align: center;"><%- @T('Also notify via email') %>
+      </thead>
+      <tbody>
+      <% if @config.matrix: %>
+        <% for key, value of @config.matrix: %>
+        <tr>
+          <td>
+            <%- @T(value.name) %>
+          <td class="u-positionOrigin">
+            <label class="checkbox-replacement checkbox-replacement--fullscreen">
+              <input type="checkbox" name="matrix.<%= key %>.criteria.owned_by_me" value="true" <% if value.criteria && value.criteria.owned_by_me: %>checked<% end %>/>
+              <%- @Icon('checkbox', 'icon-unchecked') %>
+              <%- @Icon('checkbox-checked', 'icon-checked') %>
+            </label>
+          <td class="u-positionOrigin">
+            <label class="checkbox-replacement checkbox-replacement--fullscreen">
+              <input type="checkbox" name="matrix.<%= key %>.criteria.owned_by_nobody" value="true"  <% if value.criteria && value.criteria.owned_by_nobody: %>checked<% end %>/>
+              <%- @Icon('checkbox', 'icon-unchecked') %>
+              <%- @Icon('checkbox-checked', 'icon-checked') %>
+            </label>
+          <td class="u-positionOrigin">
+            <label class="checkbox-replacement checkbox-replacement--fullscreen">
+              <input type="checkbox" name="matrix.<%= key %>.criteria.no" value="true"  <% if  value.criteria && value.criteria.no: %>checked<% end %>/>
+              <%- @Icon('checkbox', 'icon-unchecked') %>
+              <%- @Icon('checkbox-checked', 'icon-checked') %>
+            </label>
+          <td class="u-positionOrigin settings-list-separator">
+            <label class="checkbox-replacement checkbox-replacement--fullscreen">
+              <input type="checkbox" name="matrix.<%= key %>.channel" value="email" <% if value.channel && value.channel.email: %>checked<% end %>/>
+              <%- @Icon('checkbox', 'icon-unchecked') %>
+              <%- @Icon('checkbox-checked', 'icon-checked') %>
+            </label>
+        <% end %>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @groups: %>
+  <h2>* <%- @T( 'Limit Groups' ) %></h2>
+  <div class="settings-entry">
+    <table class="settings-list">
+      <thead>
+        <tr>
+          <th><%- @T('Group') %>
+          <th><%- @T('Not Assigned') %> & <%- @T('All Tickets') %>
+      </thead>
+      <tbody>
+      <% for group in @groups: %>
+        <tr>
+          <td><%= group.displayName() %>
+          <td class="u-positionOrigin">
+            <label class="checkbox-replacement checkbox-replacement--fullscreen">
+              <input type="checkbox" name="group_ids" value="<%= group.id %>" <% if _.include(@config.group_ids, group.id.toString()): %>checked<% end %>/>
+              <%- @Icon('checkbox', 'icon-unchecked') %>
+              <%- @Icon('checkbox-checked', 'icon-checked') %>
+            </label>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% end %>
+
+  <h2><%- @T('Sounds') %></h2>
+  <div class="form-group">
+    <div class="formGroup-label">
+      <label for="notification-sound"><%- @T('Notification Sound') %></label>
+    </div>
+    <div class="controls controls--select">
+      <select class="form-control js-notificationSound" id="notification-sound" name="notification_sound::file">
+        <% for sound in @sounds: %>
+        <option value="<%= sound.file %>"<%= ' selected' if sound.selected %>><%= sound.name %></option>
+        <% end %>
+      </select>
+      <%- @Icon('arrow-down') %>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="inline-label">
+      <span class="checkbox-replacement checkbox-replacement--inline">
+        <input type="checkbox" name="notification_sound::enabled" value="true" <% if @notificationSoundEnabled: %> checked<% end %> class="js-SoundEnableDisable">
+        <%- @Icon('checkbox', 'icon-unchecked') %>
+        <%- @Icon('checkbox-checked', 'icon-checked') %>
+      </span>
+      <%- @T('Play user interface sound effects') %>
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn--primary"><%- @T( 'Submit' ) %></button>
+</form>

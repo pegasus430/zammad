@@ -1,0 +1,159 @@
+<div class="page-header">
+  <div class="page-header-title">
+    <div class="zammad-switch zammad-switch--small js-formSetting">
+       <input name="form_ticket_create" type="checkbox" id="setting-form" <% if @formSetting: %>checked<% end %>>
+       <label for="setting-form"></label>
+    </div>
+    <h1><%- @T('Form') %> <small></small></h1>
+  </div>
+</div>
+<div class="page-content">
+  <p><%- @T('With form you can add a form to your web page which directly generates a ticket for you.') %></p>
+
+  <h2><%- @T('Settings') %></h2>
+  <form class="js-paramsSetting">
+    <fieldset>
+      <div class="input form-group formGroup--halfSize">
+        <div class="formGroup-label">
+          <label for="form-group"><%- @T('Group selection for Ticket creation') %></label>
+        </div>
+        <div class="controls js-groupSelector" id="from-group"></div>
+      </div>
+    </fieldset>
+  </form>
+
+  <h2><%- @T('Designer') %></h2>
+  <form class="js-paramsDesigner">
+
+    <fieldset>
+      <div class="input form-group formGroup--halfSize">
+        <div class="formGroup-label">
+          <label for="form-message-title"><%- @T('Title of the form') %></label>
+        </div>
+        <div class="controls">
+          <input type="text" id="form-message-title" name="messageTitle" value="<%- @Ti('Feedback Form') %>">
+        </div>
+      </div>
+      <div class="input form-group formGroup--halfSize">
+        <div class="formGroup-label">
+          <label for="form-message-submit"><%- @T('Name of form submit button') %></label>
+        </div>
+        <div class="controls">
+          <input type="text" id="form-message-submit" name="messageSubmit" value="<%- @Ti('Submit') %>">
+        </div>
+      </div>
+      <div class="input form-group">
+        <div class="formGroup-label">
+          <label for="form-message-thank-you"><%- @T('Message after sending form') %></label>
+        </div>
+        <div class="controls">
+          <textarea type="text" id="form-message-thank-you" name="messageThankYou" rows="3"><%- @Ti('Thank you for your inquiry (#%s)! We\'ll contact you as soon as possible.') %></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <br>
+
+    <table class="settings-list">
+      <thead>
+        <tr>
+          <th style="white-space: nowrap;"><%- @T('Options') %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <label class="inline-label">
+              <span class="checkbox-replacement checkbox-replacement--inline">
+                <input type="checkbox" name="debug" value="true">
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+              </span>
+              <%- @T('Enable debugging for implementation.') %>
+            </label>
+        <tr>
+          <td>
+            <label class="inline-label">
+              <span class="checkbox-replacement checkbox-replacement--inline">
+                <input type="checkbox" name="showTitle" value="true">
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+              </span>
+              <%- @T('Show title in form.') %>
+            </label>
+        <tr>
+          <td>
+            <label class="inline-label">
+              <span class="checkbox-replacement checkbox-replacement--inline">
+                <input type="checkbox" name="modal" value="true" checked>
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+              </span>
+              <%- @T('Start modal dialog for form.') %>
+            </label>
+        <tr>
+          <td>
+            <label class="inline-label">
+              <span class="checkbox-replacement checkbox-replacement--inline">
+                <input type="checkbox" name="noCSS" value="true">
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+              </span>
+              <%- @T('Don\'t load CSS for form. You need to generate your own CSS for the form.') %>
+            </label>
+        <tr>
+          <td>
+            <label class="inline-label">
+              <span class="checkbox-replacement checkbox-replacement--inline">
+                <input type="checkbox" name="attachmentSupport" value="true">
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+              </span>
+              <%- @T('Add attachment option to upload.') %>
+            </label>
+      </tbody>
+    </table>
+  </form>
+
+  <label class="formGroup-label"><%- @T('Preview') %></label>
+
+  <div class="browser form-demo js-browser">
+    <div class="browser-body js-browserBody">
+      <div class="browser-website centered vertical fit">
+        <div class="btn js-formBtn"><%- @T('Feedback') %></div>
+        <div class="js-formInline" style="width: 300px;"></div>
+        <script id="zammad_form_script" src="/assets/form/form.js"></script>
+      </div>
+    </div>
+  </div>
+  <h3><%- @T('Requirements') %></h3>
+  <p><%- @T("Zammad Forms requires jQuery. If you don't already use it on your website include it like this:") %></p>
+  <pre><code class="language-html js-code">&lt;script src="https://code.jquery.com/jquery-2.1.4.min.js"&gt;&lt;/script&gt;</code></pre>
+
+  <p><%- @T('You need to add the following Javascript code snippet to your web page') %>:</p>
+
+  <pre class="js-modal"><code class="language-html js-code js-paramsBlock">&lt;button id="feedback-form"&gt;Feedback&lt;/button&gt;
+
+&lt;script id="zammad_form_script" src="<%= @baseurl %>/assets/form/form.js"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+$(function() {
+  $('#feedback-form').ZammadForm({
+<span class="js-modal-params"></span>
+  });
+});
+&lt;/script&gt;</code></pre>
+</div>
+
+  <pre class="js-inlineForm"><code class="language-html js-code js-paramsBlock">&lt;div id="feedback-form"&gt;form will be placed in here&lt;/div&gt;
+
+&lt;script id="zammad_form_script" src="<%= @baseurl %>/assets/form/form.js"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+$(function() {
+  $('#feedback-form').ZammadForm({
+<span class="js-modal-params"></span>
+  });
+});
+&lt;/script&gt;</code></pre>
+</div>

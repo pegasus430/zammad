@@ -1,0 +1,28 @@
+# Copyright (C) 2012-2016 Zammad Foundation, http://zammad-foundation.org/
+
+class Channel::Driver::MailStdin < Channel::EmailParser
+
+=begin
+
+process emails from STDIN
+
+  cat /path/to/mail.eml | rails r 'Channel::Driver::MailStdin.new'
+
+e. g.
+
+  cat test/data/mail/mail001.box | rails r 'Channel::Driver::MailStdin.new'
+
+e. g. if you want to trust on mail headers
+
+  cat test/data/mail/mail001.box | rails r 'Channel::Driver::MailStdin.new(trusted: true)'
+
+=end
+
+  def initialize(params = {})
+    Rails.logger.info 'read main from STDIN'
+
+    msg = ARGF.read
+
+    process(params, msg)
+  end
+end

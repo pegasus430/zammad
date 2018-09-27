@@ -1,0 +1,7 @@
+---
+:checks_remove:
+- :common
+- :rails
+:checks_add:
+- :rubocop
+- :coffeelint

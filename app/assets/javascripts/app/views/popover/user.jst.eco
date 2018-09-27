@@ -1,0 +1,35 @@
+<% if @object['organization']: %>
+<div class="user-organization"><a href="<%- @object.organization.uiUrl() %>"><%= @object.organization.displayName() %></a></div>
+<% end %>
+
+<%- @V('popover/single_object_generic', object: @object, attributes: @attributes) %>
+<% if !_.isEmpty(@object['accounts']): %>
+  <hr>
+  <div class="popover-block">
+    <label><%- @T('Linked Accounts') %></label>
+    <% for account of @object['accounts']: %>
+      <a href="<%= @object['accounts'][account]['link'] %>" target="_blank"><%= account %></a>
+    <% end %>
+  </div>
+<% end %>
+<% if !_.isEmpty(@object['links']): %>
+  <hr>
+  <% for link in @object['links']: %>
+    <div class="popover-block">
+      <label><%- @T(link['title']) %></label>
+      <% for item in link['items']: %>
+        <% if item['url']: %>
+          <a href="<%= item['url'] %>" title="<%- @Ti(item['title']) %>" style="<%= item['style'] %>" data-type="<%= item['data'] %>" class="<%= item['class'] %>" <% if link.new_window: %>target="_blank"<% end %>>
+        <% else: %>
+          <span title="<%- @Ti(item['title']) %>" style="<%= item['style'] %>" data-type="<%= item['data'] %>" class="<%= item['class'] %>">
+        <% end %>
+          <%- @T(item['name']) %> <% if item['count'] isnt undefined: %><span class="count">(<%= item['count'] %>)</span><% end %>
+        <% if item['url']: %>
+          </a>
+        <% else: %>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

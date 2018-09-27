@@ -1,0 +1,25 @@
+<label><%- @T(@head) %> (<%= @ticket_ids.length %>)</label>
+<% if @ticket_ids.length: %>
+<ol class="tasks tasks--standalone">
+  <% for ticket_id in @ticket_ids_show: %>
+  <% ticket = App.Ticket.fullLocal(ticket_id) %>
+  <li class="task">
+    <div class="icon-holder" title="<%- ticket.iconTitle() %>">
+      <%- @Icon('task-state', ticket.iconClass()) %>
+    </div>
+    <div class="task-text">
+      <a class="name ticket-popover" data-id="<%- ticket_id %>" href="<%- ticket.uiUrl() %>"><%= ticket.title || '-' %></a>
+       <%- @humanTime(ticket.created_at, false, 'time') %>
+    </div>
+  </li>
+  <% end %>
+</ol>
+<% else: %>
+<div class="profile-ticketsPlaceholder vertical centered">
+  <div class="<%- @iconClass %>"></div>
+  <%- @T('none') %>
+</div>
+<% end %>
+<% if @ticket_ids.length > @ticket_ids_show.length: %>
+  <a href="#" class="js-showAll"><%- @T('Show all...') %></a>
+<% end %>

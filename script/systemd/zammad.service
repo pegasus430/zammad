@@ -1,0 +1,18 @@
+[Unit]
+Description=Zammad
+After=syslog.target
+After=network.target
+StopWhenUnneeded=true
+Wants=zammad-rails.service
+Wants=zammad-scheduler.service
+Wants=zammad-websocket.service
+
+[Service]
+EnvironmentFile=/etc/zammad/zammad.env
+User=zammad
+Group=zammad
+Restart=always
+ExecStart=/bin/sleep infinity
+
+[Install]
+WantedBy=multi-user.target

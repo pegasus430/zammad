@@ -1,0 +1,18 @@
+<div class="page-header">
+  <div class="page-header-title">
+    <h1><%- @T('Link Accounts') %></h1>
+  </div>
+</div>
+<div class="page-content">
+  <ul>
+    <% for key, provider of @auth_providers: %>
+      <li> <%- @T( provider.name ) %>
+        <% if !@user['accounts'] || !@user['accounts'][key]: %><a href="<%= provider.url %>">
+          <%- @T('Add') %></a>
+        <% else: %>
+          "<%= @user['accounts'][key]['username'] %>" <a href="#" data-uid="<%= @user['accounts'][key]['uid'] %>" data-provider="<%= key %>" class="js-remove"><%- @T('remove') %></a>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

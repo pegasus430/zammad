@@ -1,0 +1,3 @@
+<div class="main flex vertical centered darkBackground">
+  <%- @Icon('full-logo', 'wizard-logo') %>
+</div>

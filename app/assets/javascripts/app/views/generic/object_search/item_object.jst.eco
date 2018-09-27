@@ -1,0 +1,18 @@
+<li class="recipientList-entry js-object" data-object-id="<%= @object.id %>">
+  <div class="recipientList-iconSpacer">
+    <%- @Icon(@icon, 'recipientList-icon') %>
+  </div>
+  <div class="recipientList-name">
+    <% if @realname: %>
+      <%= @realname %>
+    <% else: %>
+      <%= @object.displayName() %>
+    <% end %>
+    <% if @object.organization: %>
+      <span class="recipientList-detail">- <%= @object.organization.displayName() %></span>
+    <% end %>
+  </div>
+  <% if @object.active is false: %>
+    <div class="recipientList-status"><%= @Ti('inactive') %></div>
+  <% end %>
+</li>

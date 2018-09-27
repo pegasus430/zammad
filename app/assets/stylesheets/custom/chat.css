@@ -1,0 +1,11 @@
+#app > #chat {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  display: none;
+}
+
+#chat .well-chat {
+  padding: 8px 15px 0px 15px;
+  margin: 0px;
+}

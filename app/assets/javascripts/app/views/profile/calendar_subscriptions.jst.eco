@@ -1,0 +1,70 @@
+<div class="page-header">
+  <div class="page-header-title">
+    <h1><%- @T('Calendar') %></h1>
+  </div>
+</div>
+<div class="page-content">
+  <h2><%- @T('Ticket Subscriptions') %></h2>
+
+  <p><%- @T('See your tickets from within your favorite calendar by adding the following URL to your calendar app.') %></p>
+
+  <label for="calendar-subscription-url"><%- @T('URL') %></label>
+  <form class="form--flexibleWidth">
+    <div class="form-group">
+      <div class="controls">
+        <input type="url" class="form-control js-select" readonly value="<%= @baseurl %>/ical/tickets" id="calendar-subscription-url">
+      </div>
+    </div>
+  </form>
+
+  <h3><%- @T('Subscription Settings') %></h3>
+  <div class="form-group">
+    <div class="formGroup-label">
+      <label for="notification-sound"><%- @T('Alarm') %></label>
+    </div>
+    <div class="controls">
+      <label class="checkbox-replacement inline-label">
+        <input type="checkbox" name="alarm" value="true" <% if @preferences.alarm: %>checked<% end %>/>
+        <%- @Icon('checkbox', 'icon-unchecked') %>
+        <%- @Icon('checkbox-checked', 'icon-checked') %>
+        <span class="label-text"><%- @T('Add alarm to pending reminder and escalated tickets.') %></span>
+      </label>
+    </div>
+  </div>
+  <table class="settings-list">
+    <thead>
+      <tr>
+        <th style="white-space: nowrap;"><%- @T('Status Type') %>
+        <th colspan="2"><%- @T('Options') %>
+        <th width="100%"><%- @T('Direct URL') %>
+      </tr>
+    </thead>
+    <tbody>
+      <% for stateType, options of @preferences: %>
+        <% if _.isObject(options): %>
+          <tr>
+            <td style="text-transform: capitalize">
+              <%= @translationTable[stateType] %>
+            <td>
+              <label class="inline-label checkbox-replacement">
+                <input type="checkbox" name="<%= stateType %>/own"<%= if options.own then ' checked' %>>
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+                <span class="label-text"><%- @T('My Tickets') %></span>
+              </label>
+            <td>
+              <label class="inline-label checkbox-replacement">
+                <input type="checkbox" name="<%= stateType %>/not_assigned"<%= if options.not_assigned then ' checked' %>>
+                <%- @Icon('checkbox', 'icon-unchecked') %>
+                <%- @Icon('checkbox-checked', 'icon-checked') %>
+                <span class="label-text"><%- @T('Not Assigned') %></span>
+              </label>
+            <td>
+              <div class="btn btn--table btn--text js-showLink"><%- @T('Show') %></div>
+              <input class="form-control form-control--borderless js-select is-hidden" readonly value="<%- @baseurl %>/ical/tickets/<%= stateType %>">
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>

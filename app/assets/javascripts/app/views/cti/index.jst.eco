@@ -1,0 +1,4 @@
+<div class="main flex">
+  <h1><%- @T('Caller log') %></h1>
+  <div class="page-content js-callerLog"></div>
+</div>

@@ -1,0 +1,38 @@
+<div class="alert alert--danger hidden" role="alert"></div>
+<fieldset>
+
+  <h3><%- @T('Search Terms') %></h3>
+  <p class="description"><%- @T('Tweets containing search terms are automatically turned into tickets.') %></p>
+
+  <table class="settings-list">
+    <thead>
+      <tr>
+        <th><%- @T('Search Term') %>
+        <th><%- @T('Group') %>
+        <th><%- @T('Action') %>
+    </thead>
+    <tbody class="js-searchTermList">
+      <tr>
+        <td colspan="3">
+          <%- @T('Empty') %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="settings-list-action-cell js-searchTermAdd">
+          <%- @Icon('plus-small') %>
+    </tfoot>
+  </table>
+
+  <h3><%- @T('Mentions Group') %></h3>
+  <p class="description"><%- @T('Choose which group %s will get added to.', 'mentions') %></p>
+  <div class="js-mentionsGroup"></div>
+
+  <h3><%- @T('Direct Messages Group') %></h3>
+  <p class="description"><%- @T('Choose which group %s will get added to.', 'direct messages') %></p>
+  <div class="js-directMessagesGroup"></div>
+
+  <h3><%- @T('Retweets') %></h3>
+  <p class="description"><%- @T('Choose if retweets should also be converted to tickets.') %></p>
+  <input name="track_retweets" type="checkbox" id="setting-chat" value="true" <% if @channel.options.sync.track_retweets: %>checked<% end %>> <%- @T('Track retweets') %>
+
+</fieldset>

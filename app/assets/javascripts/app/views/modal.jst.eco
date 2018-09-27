@@ -1,0 +1,42 @@
+<div class="modal-dialog">
+  <form autocomplete="off">
+    <div class="modal-content">
+      <div class="modal-header">
+  <% if @buttonClose: %>
+        <div class="modal-close js-close">
+          <%- @Icon('diagonal-cross') %>
+        </div>
+  <% end %>
+  <% if @head: %>
+        <h1 class="modal-title"><% if @headPrefix: %><%- @T(@headPrefix) %>: <% end %><%- @T(@head) %></h1>
+  <% end %>
+      </div>
+      <div class="modal-body">
+      <%- @content %>
+      </div>
+      <div class="modal-footer">
+  <% if @buttonCancel: %>
+        <div class="modal-leftFooter">
+          <a class="btn <%= @buttonCancelClass %> js-cancel align-left" href="#"><%- @T(@buttonCancel) %></a>
+        </div>
+  <% else if @leftButtons: %>
+    <% for button in @leftButtons: %>
+        <div class="modal-leftFooter">
+          <div class="btn <%= button.className %> align-left" href="#"><%- @T(button.text) %></div>
+        </div>
+    <% end %>
+  <% end %>
+  <% for button in @centerButtons: %>
+        <div class="modal-centerFooter">
+          <div class="btn <%= button.className %> align-center"><%- @T(button.text) %></div>
+        </div>
+  <% end %>
+  <% if @buttonSubmit: %>
+        <div class="modal-rightFooter">
+          <button type="submit" class="btn <%= @buttonClass %> js-submit align-right"><%- @T(@buttonSubmit) %></button>
+        </div>
+  <% end %>
+      </div>
+    </div>
+  </form>
+</div>

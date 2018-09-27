@@ -1,0 +1,8 @@
+<form class="settings-entry" id="<%= @setting.name %>">
+  <h2><%- @T(@setting.title) %></h2>
+  <p><%- @T(@setting.description) %></p>
+  <div class="js-loginPreview"></div>
+  <div class="setting-controls">
+    <button type="submit" class="btn btn--primary"><%- @T('Submit') %></button>
+  </div>
+</form>

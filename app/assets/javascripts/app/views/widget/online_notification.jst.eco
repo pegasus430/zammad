@@ -1,0 +1,11 @@
+<div class="arrow js-arrow"></div>
+<div class="popover-notificationsHeader js-header">
+  <div class="popover-title"><%- @T('Notifications') %> <span class='popover-notificationsCounter js-notificationsCounter'><%- @count %></span></div>
+  <a class="btn btn--text btn--subtle js-mark<%- ' hide' if !@count %>"><%- @T( 'Mark all as read' ) %></a>
+</div>
+<div class="popover-content js-content">
+  <div class="activity-placeholder js-noNotifications">
+    <%- @T("No unread notifications for you. :)") %>
+  </div>
+  <div class="js-items"></div>
+</div>

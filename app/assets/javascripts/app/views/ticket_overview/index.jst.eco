@@ -1,0 +1,7 @@
+<div class="js-error hide fullscreenMessage"></div>
+<div class="sidebar"></div>
+<div class="main flex">
+  <div class="overview-header"></div>
+  <div class="overview-table"></div>
+</div>
+<div class="batch-overlay js-batch-overlay"></div>

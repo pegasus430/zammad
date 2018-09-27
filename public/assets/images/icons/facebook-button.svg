@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="29px" height="24px" viewBox="0 0 29 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+    <title>facebook-button</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="facebook-button">
+            <polygon id="bar" fill="#778EBA" points="0 18 29 18 29 23 0 23"></polygon>
+            <path d="M18,23 L18,13 L15,13 L15,9 L18,9 L18,4.90979004 C18,2.82548447 19.5463004,1 22,1 L27,1 L27,4.80793996 L23.1369773,4.80793996 C22.0660533,4.80793996 22,4.83291939 22,5.82806396 L22,9 L25.5,9 L25,13 L22,13 L22,23 L18,23 Z" id="f" fill="#FFFFFF"></path>
+        </g>
+    </g>
+</svg>

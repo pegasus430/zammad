@@ -1,0 +1,20 @@
+<div class="js-item activity-entry">
+  <div class="activity-avatar js-avatar"></div>
+  <a href="<%- @item.link %>" class="activity-body">
+    <span class="activity-message">
+      <span class="activity-text">
+        <% if @item.objectNative && @item.objectNative.activityMessage: %>
+          <%- @item.objectNative.activityMessage(@item) %>
+        <% else: %>
+            Need objectNative in item <%= item.object %>.find(<%= item.o_id %>)
+        <% end %>
+      </span>
+      <%- @humanTime(@item.created_at, false, 'activity-time') %>
+    </span>
+    <span class="activity-icon">
+      <% if @item.cssIcon: %>
+      <%- @Icon(@item.cssIcon) %>
+      <% end %>
+    </span>
+  </a>
+</div>

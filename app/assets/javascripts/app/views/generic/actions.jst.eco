@@ -1,0 +1,14 @@
+<div class="dropdown dropdown--actions">
+  <div class="dropdown-toggle" id="userAction" data-toggle="dropdown">
+    <% if @type isnt 'small': %>
+      <%- @Icon('cog', 'dropdown-icon') %>
+      <label><%- @T('Action') %></label>
+    <% end %>
+    <%- @Icon('arrow-down') %>
+  </div>
+  <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="userAction">
+    <% for item in @items: %>
+      <li role="presentation" data-type="<%= item.name %>"><a role="menuitem" tabindex="-1" href="#"><%- @T( item.title ) %></a>
+    <% end %>
+  </ul>
+</div>

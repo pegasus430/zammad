@@ -1,0 +1,48 @@
+<div class="page-header">
+  <div class="page-header-title">
+      <div class="zammad-switch zammad-switch--small js-timeAccountingSetting">
+         <input name="chat" type="checkbox" id="time-accounting" <% if @C('time_accounting'): %>checked<% end %>>
+         <label for="time-accounting"></label>
+      </div>
+    <h1><%- @T('Time Accounting') %><small></small></h1>
+  </div>
+</div>
+<div class="page-content">
+
+  <div class="settings-entry">
+    <div class="page-header-title">
+      <h2><%- @T('Selector') %></h2>
+    </div>
+    <p><%- @T('Enable time accounting for following matching tickets.') %></p>
+    <div class="js-selector"></div>
+    <button type="submit" class="btn btn--primary js-timeAccountingFilter"><%- @T('Save') %></button>
+    <button type="submit" class="btn btn--danger js-timeAccountingFilterReset"><%- @T('Reset') %></button>
+  </div>
+
+  <div class="settings-entry">
+
+    <h2><%- @T('Overviews') %></h2>
+    <div class="well">
+      <div class="btn-group btn-group--full" role="group" aria-label="">
+        <% for item in @timeRangeYear: %>
+          <div class="btn btn--text btn--large js-timePickerYear<%- ' is-selected' if @year is item.value %>" data-id="<%= @timeRange %>" data-type="<%= item.value %>"><%= item.display %></div>
+        <% end %>
+      </div>
+
+      <div class="btn-group btn-group--full" role="group" aria-label="">
+        <% for item in @timeRangeMonth: %>
+          <div class="btn btn--text btn--large js-timePickerMonth<%- ' is-selected' if @month is item.value %>" data-id="<%= @timeRange %>" data-type="<%= item.value %>"><%= item.display %></div>
+        <% end %>
+      </div>
+    </div>
+    <h3><%- @T('Ticket') %> <a href="<%- @apiPath %>/time_accounting/log/by_ticket/<%= @year %>/<%= @month %>?download=true" class="js-downloadByTicket" data-type="attachment"><%- @Icon('download') %></a></h3>
+    <div class="js-tableTicket"></div>
+    <br>
+    <h3><%- @T('Customer') %> <a href="<%- @apiPath %>/time_accounting/log/by_customer/<%= @year %>/<%= @month %>?download=true" class="js-downloadByCustomer" data-type="attachment"><%- @Icon('download') %></a></h3>
+    <div class="js-tableCustomer"></div>
+    <br>
+    <h3><%- @T('Organization') %> <a href="<%- @apiPath %>/time_accounting/log/by_organization/<%= @year %>/<%= @month %>?download=true" class="js-downloadByOrganization" data-type="attachment"><%- @Icon('download') %></a></h3>
+    <div class="js-tableOrganization"></div>
+  </div>
+
+</div>

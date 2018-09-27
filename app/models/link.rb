@@ -1,0 +1,224 @@
+# Copyright (C) 2012-2016 Zammad Foundation, http://zammad-foundation.org/
+
+class Link < ApplicationModel
+
+  # rubocop:disable Rails/InverseOf
+  belongs_to :link_type,   class_name: 'Link::Type'
+  belongs_to :link_object, class_name: 'Link::Object'
+  # rubocop:enable Rails/InverseOf
+
+  after_destroy :touch_link_references
+
+  @map = {
+    'normal' => 'normal',
+    'parent' => 'child',
+    'child'  => 'parent',
+  }
+
+=begin
+
+  links = Link.list(
+    link_object: 'Ticket',
+    link_object_value: 1
+  )
+
+=end
+
+  def self.list(data)
+    linkobject = link_object_get( name: data[:link_object] )
+    return if !linkobject
+    items = []
+
+    # get links for one site
+    list = Link.where(
+      'link_object_source_id = ? AND link_object_source_value = ?', linkobject.id, data[:link_object_value]
+    )
+
+    list.each do |item|
+      link = {}
+      link['link_type']         = @map[ Link::Type.find( item.link_type_id ).name ]
+      link['link_object']       = Link::Object.find( item.link_object_target_id ).name
+      link['link_object_value'] = item.link_object_target_value
+      items.push link
+    end
+
+    # get links for the other site
+    list = Link.where(
+      'link_object_target_id = ? AND link_object_target_value = ?', linkobject.id, data[:link_object_value]
+    )
+    list.each do |item|
+      link = {}
+      link['link_type']         = Link::Type.find( item.link_type_id ).name
+      link['link_object']       = Link::Object.find( item.link_object_source_id ).name
+      link['link_object_value'] = item.link_object_source_value
+      items.push link
+    end
+
+    items
+  end
+
+=begin
+
+   Link.add(
+    link_type: 'normal',
+    link_object_source: 'Ticket',
+    link_object_source_value: 6,
+    link_object_target: 'Ticket',
+    link_object_target_value: 31
+  )
+
+  Link.add(
+    link_types_id: 12,
+    link_object_source_id: 1,
+    link_object_source_value: 1,
+    link_object_target_id: 1,
+    link_object_target_value: 1
+  )
+
+=end
+
+  def self.add(data)
+
+    if data.key?(:link_type)
+      linktype = link_type_get(name: data[:link_type])
+      data[:link_type_id] = linktype.id
+      data.delete(:link_type)
+    end
+
+    if data.key?(:link_object_source)
+      linkobject = link_object_get(name: data[:link_object_source])
+      data[:link_object_source_id] = linkobject.id
+      touch_reference_by_params(
+        object: data[:link_object_source],
+        o_id: data[:link_object_source_value],
+      )
+      data.delete(:link_object_source)
+    end
+
+    if data.key?(:link_object_target)
+      linkobject = link_object_get(name: data[:link_object_target])
+      data[:link_object_target_id] = linkobject.id
+      touch_reference_by_params(
+        object: data[:link_object_target],
+        o_id: data[:link_object_target_value],
+      )
+      data.delete(:link_object_target)
+    end
+
+    Link.create(data)
+  end
+
+=begin
+
+   Link.remove(
+    link_type: 'normal',
+    link_object_source: 'Ticket',
+    link_object_source_value: 6,
+    link_object_target: 'Ticket',
+    link_object_target_value: 31
+  )
+
+=end
+
+  def self.remove(data)
+    if data.key?(:link_object_source)
+      linkobject = link_object_get(name: data[:link_object_source])
+      data[:link_object_source_id] = linkobject.id
+    end
+
+    if data.key?(:link_object_target)
+      linkobject = link_object_get(name: data[:link_object_target])
+      data[:link_object_target_id] = linkobject.id
+    end
+
+    # from one site
+    if data.key?(:link_type)
+      linktype = link_type_get(name: data[:link_type])
+      data[:link_type_id] = linktype.id
+    end
+    Link.where(
+      link_type_id: data[:link_type_id],
+      link_object_source_id: data[:link_object_source_id],
+      link_object_source_value: data[:link_object_source_value],
+      link_object_target_id: data[:link_object_target_id],
+      link_object_target_value: data[:link_object_target_value]
+    ).destroy_all
+
+    # from the other site
+    if data.key?(:link_type)
+      linktype = link_type_get(name: @map[ data[:link_type] ])
+      data[:link_type_id] = linktype.id
+    end
+
+    Link.where(
+      link_type_id: data[:link_type_id],
+      link_object_target_id: data[:link_object_source_id],
+      link_object_target_value: data[:link_object_source_value],
+      link_object_source_id: data[:link_object_target_id],
+      link_object_source_value: data[:link_object_target_value]
+    ).destroy_all
+  end
+
+=begin
+
+   Link.remove_all(
+    link_object: 'Ticket',
+    link_object_value: 6,
+  )
+
+=end
+
+  def self.remove_all(data)
+    if data.key?(:link_object)
+      linkobject = link_object_get(name: data[:link_object])
+      data[:link_object_id] = linkobject.id
+    end
+
+    Link.where(
+      link_object_target_id: data[:link_object_id],
+      link_object_target_value: data[:link_object_value],
+    ).destroy_all
+    Link.where(
+      link_object_source_id: data[:link_object_id],
+      link_object_source_value: data[:link_object_value],
+    ).destroy_all
+
+    true
+  end
+
+  def touch_link_references
+    Link.touch_reference_by_params(
+      object: Link::Object.lookup(id: link_object_source_id).name,
+      o_id: link_object_source_value,
+    )
+    Link.touch_reference_by_params(
+      object: Link::Object.lookup(id: link_object_target_id).name,
+      o_id: link_object_target_value,
+    )
+  end
+
+  def self.link_type_get(data)
+    linktype = Link::Type.find_by(name: data[:name])
+    if !linktype
+      linktype = Link::Type.create(name: data[:name])
+    end
+    linktype
+  end
+
+  def self.link_object_get(data)
+    linkobject = Link::Object.find_by(name: data[:name])
+    if !linkobject
+      linkobject = Link::Object.create(name: data[:name])
+    end
+    linkobject
+  end
+
+end
+
+class Link::Type < ApplicationModel
+  validates :name, presence: true
+end
+
+class Link::Object < ApplicationModel
+  validates :name, presence: true
+end

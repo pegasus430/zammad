@@ -1,0 +1,17 @@
+<form autocomplete="off">
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-close js-close">
+        <%- @Icon('diagonal-cross') %>
+      </div>
+      <h1 class="modal-title"><%- @T( @head ) %></h1>
+    </div>
+    <div class="modal-body" id="form-user"></div>
+    <div class="modal-footer">
+      <a class="btn btn--text btn--subtle js-cancel" href="#/"><%- @T( 'Cancel & Go Back' ) %></a>
+      <button type="submit" class="btn btn--success js-submit align-right"><%- @T( 'Create' ) %></button>
+    </div>
+  </div>
+</div>
+</form>

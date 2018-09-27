@@ -1,0 +1,10 @@
+<div class="main flex vertical centered darkBackground">
+  <%- @Icon('full-logo', 'wizard-logo') %>
+  <div class="setup wizard">
+    <div class="wizard-slide">
+      <div class="wizard-body vertical centered">
+        <%- @T(@message) %>
+      </div>
+    </div>
+  </div>
+</div>

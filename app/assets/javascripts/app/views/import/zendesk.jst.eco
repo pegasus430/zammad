@@ -1,0 +1,111 @@
+<div class="main flex vertical centered darkBackground">
+  <%- @Icon('full-logo', 'wizard-logo') %>
+  <div class="import wizard">
+    <div class="wizard-slide vertical" data-slide="zendesk-url">
+      <h2><%- @T('%s URL', 'Zendesk') %></h2>
+      <div class="wizard-body flex vertical justified">
+        <p>
+          <%- @T('Enter the URL of your %s system', 'Zendesk') %>:
+        </p>
+        <div class="form-group">
+          <label for="zendesk-url"><%- @T('%s URL', 'Zendesk') %></label>
+          <div class="u-positionOrigin">
+            <input type="url" id="zendesk-url" class="form-control" placeholder="https://example.zendesk.com/" name="zendesk-url">
+            <div class="input-feedback centered">
+              <div class="small loading icon"></div>
+              <%- @Icon('diagonal-cross', 'icon-error') %>
+              <%- @Icon('checkmark') %>
+            </div>
+          </div>
+          <div class="error zendesk-url-error"></div>
+        </div>
+      </div>
+      <div class="wizard-controls horizontal center">
+        <a class="btn btn--text btn--secondary" href="#import"><%- @T('Go Back') %></a>
+        <div class="btn btn--primary align-right hide js-zendesk-credentials" data-target="zendesk-credentials"><%- @T('Enter credentials') %></div>
+      </div>
+    </div>
+
+    <div class="wizard-slide vertical hide" data-slide="zendesk-credentials">
+      <h2><%- @T('%s credentials', 'Zendesk') %></h2>
+      <div class="wizard-body flex vertical justified">
+        <p>
+          <a class="js-zendeskUrlApiToken" href="#" target="_blank"><%- @T('Enter your email address and the %s API token gained from your admin interface.', 'Zendesk') %></a>
+        </p>
+        <p>
+          <%- @T('Attention: These will be your login password after the import is completed.') %>
+        </p>
+        <div class="form-group">
+          <label for="zendesk-email"><%- @T('Email') %></label>
+          <div class="u-positionOrigin">
+            <input type="email" id="zendesk-email" class="form-control" placeholder="admin@example.com" name="zendesk-email">
+          </div>
+          <label for="zendesk-api-token"><%- @T('API token') %></label>
+          <div class="u-positionOrigin">
+            <input type="email" id="zendesk-api-token" class="form-control" placeholder="XYZ3133723421111" name="zendesk-api-token">
+            <div class="input-feedback centered">
+              <div class="small loading icon"></div>
+              <%- @Icon('diagonal-cross', 'icon-error') %>
+              <%- @Icon('checkmark') %>
+            </div>
+          </div>
+          <div class="error zendesk-api-token-error"></div>
+        </div>
+      </div>
+      <div class="wizard-controls horizontal center">
+        <a class="btn btn--text btn--secondary" href="#import"><%- @T('Go Back') %></a>
+        <div class="btn btn--primary align-right hide js-migration-start" data-target="zendesk-start-migration"><%- @T('Migrate %s Data', 'Zendesk') %></div>
+      </div>
+    </div>
+
+    <div class="wizard-slide vertical hide" data-slide="zendesk-import">
+      <h2><%- @T('%s Migration', 'Zendesk') %></h2>
+      <div class="alert alert--danger hide js-error" role="alert"></div>
+      <div class="alert alert--info hide js-ticket-count-info" role="alert"><%- @T("There are more than 1000 tickets in the Zendesk system. Due to API rate limit restrictions we can't get the exact number of tickets yet and have to fetch them in batches of 1000. This might take some time, better grab a cup of coffee. The total number of tickets gets updated as soon as the currently known number is surpassed.") %></div>
+      <div class="wizard-body flex vertical justified">
+        <table class="progressTable">
+          <tr class="js-groups">
+            <td><span class="js-done">-</span>/<span class="js-total">-</span>
+            <td><span><%- @T('Groups') %></span>
+            <td class="progressTable-progressCell">
+              <div class="horizontal center">
+                <div class="flex"><progress max="42" value="42"></progress></div>
+                <%- @Icon('checkmark') %>
+              </div>
+          </tr>
+          <tr class="js-organizations">
+            <td><span class="js-done">-</span>/<span class="js-total">-</span>
+            <td><span><%- @T('Organizations') %></span>
+            <td class="progressTable-progressCell">
+              <div class="horizontal center">
+                <div class="flex"><progress max="42" value="42"></progress></div>
+                <%- @Icon('checkmark') %>
+              </div>
+          </tr>
+          <tr class="js-users">
+            <td><span class="js-done">-</span>/<span class="js-total">-</span>
+            <td><span><%- @T('Users') %></span>
+            <td class="progressTable-progressCell">
+              <div class="horizontal center">
+                <div class="flex"><progress max="42" value="42"></progress></div>
+                <%- @Icon('checkmark') %>
+              </div>
+          </tr>
+          <tr class="js-tickets">
+            <td><span class="js-done">-</span>/<span class="js-total">-</span>
+            <td><span><%- @T('Tickets') %></span>
+            <td class="progressTable-progressCell">
+              <div class="horizontal center">
+                <div class="flex"><progress max="42" value="42"></progress></div>
+                <%- @Icon('checkmark') %>
+              </div>
+          </tr>
+        </table>
+      </div>
+      <div class="wizard-controls horizontal center">
+        <a href="#" class="btn btn--primary align-right hide js-finished"><%- @T('done') %></a>
+      </div>
+    </div>
+
+  </div>
+</div>

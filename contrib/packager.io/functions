@@ -1,0 +1,326 @@
+#!/bin/bash
+#
+# packager.io postinstall script functions
+#
+
+function debug() {
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "DEBUG MODE ON"
+    set -ex
+  fi
+}
+
+function detect_os () {
+  . /etc/os-release
+
+  if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
+    OS="DEBIAN"
+  elif [ "${ID}" == "centos" ] || [ "${ID}" == "fedora" ] || [ "${ID}" == "rhel" ]; then
+    OS="REDHAT"
+  elif [ "${ID}" == "opensuse" ] || [ "${ID}" == "sles" ] || [ "${ID}" == "suse" ]; then
+    OS="SUSE"
+  else
+    OS="UNKNOWN"
+  fi
+
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "OS is ${OS} based"
+  fi
+}
+
+function detect_docker() {
+  if [ -n "$(grep docker < /proc/1/cgroup)" ]; then
+    DOCKER="yes"
+  else
+    DOCKER="no"
+  fi
+
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "os runs in docker container = ${DOCKER}"
+  fi
+}
+
+function detect_initcmd () {
+  if [ -n "$(which systemctl 2> /dev/null)" ]; then
+    INIT_CMD="systemctl"
+  elif [ -n "$(which initctl 2> /dev/null)" ]; then
+    INIT_CMD="initctl"
+  else
+    function sysvinit () {
+      service $2 $1
+    }
+    INIT_CMD="sysvinit"
+  fi
+
+  if [ "${DOCKER}" == "yes" ]; then
+    INIT_CMD="initctl"
+  fi
+
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "INIT CMD = ${INIT_CMD}"
+  fi
+}
+
+
+function detect_database () {
+  if [ -n "$(which psql 2> /dev/null)" ]; then
+    ADAPTER="postgresql"
+  elif [ -n "$(which mysql 2> /dev/null)" ]; then
+    ADAPTER="mysql2"
+  fi
+
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "Use ${ADAPTER} adapter in database.yml"
+  fi
+}
+
+function detect_webserver () {
+  if [ -n "$(which nginx 2> /dev/null)" ] ; then
+    WEBSERVER="nginx"
+    WEBSERVER_CMD="nginx"
+    if [ "${OS}" == "DEBIAN" ]; then
+      WEBSERVER_CONF="/etc/nginx/sites-available/zammad.conf"
+    elif [ "${OS}" == "REDHAT" ]; then
+      WEBSERVER_CONF="/etc/nginx/conf.d/zammad.conf"
+    elif [ "${OS}" == "SUSE" ]; then
+      WEBSERVER_CONF="/etc/nginx/vhosts.d/zammad.conf"
+    fi
+  elif [ -n "$(which apache2 2> /dev/null)" ]; then
+    WEBSERVER="apache2"
+    WEBSERVER_CMD="apache2"
+    if [ "${OS}" == "DEBIAN" ]; then
+      WEBSERVER_CONF="/etc/apache2/sites-available/zammad.conf"
+    fi
+  elif [ -n "$(which httpd 2> /dev/null)" ]; then
+    WEBSERVER="apache2"
+    WEBSERVER_CMD="httpd"
+    if [ "${OS}" == "REDHAT" ]; then
+      WEBSERVER_CONF="/etc/httpd/conf.d/zammad.conf"
+    elif [ "${OS}" == "SUSE" ]; then
+      WEBSERVER_CONF="/etc/apache2/vhosts.d/zammad.conf"
+    fi
+  fi
+
+  if [ "${DEBUG}" == "yes" ]; then
+    echo "Webserver is ${WEBSERVER_CMD}"
+  fi
+}
+
+function create_initscripts () {
+  echo "# (Re)creating init scripts"
+  zammad scale web=${ZAMMAD_WEBS} websocket=${ZAMMAD_WEBSOCKETS} worker=${ZAMMAD_WORKERS}
+
+  echo "# Enabling Zammad on boot"
+  ${INIT_CMD} enable zammad
+}
+
+function start_zammad () {
+  echo "# Starting Zammad"
+  ${INIT_CMD} start zammad
+}
+
+function stop_zammad () {
+  echo "# Stopping Zammad"
+  ${INIT_CMD} stop zammad
+}
+
+function create_database_password () {
+  DB_PASS="$(tr -dc A-Za-z0-9 < /dev/urandom | head -c10)"
+}
+
+function create_postgresql_db () {
+  if [ -n "$(which postgresql-setup 2> /dev/null)" ]; then
+    echo "# Preparing postgresql server"
+    postgresql-setup initdb
+  fi
+
+  echo "# Creating postgresql bootstart"
+  ${INIT_CMD} enable postgresql.service
+
+  echo "# Restarting postgresql server"
+  ${INIT_CMD} restart postgresql
+
+  echo "# Creating zammad postgresql user"
+  echo "CREATE USER \"${DB_USER}\" WITH PASSWORD '${DB_PASS}';" | su - postgres -c psql
+
+  echo "# Creating zammad postgresql db"
+  su - postgres -c "createdb -E UTF8 ${DB} -O ${DB_USER}"
+
+  echo "# Grant privileges to new postgresql user"
+  echo "GRANT ALL PRIVILEGES ON DATABASE \"${DB}\" TO \"${DB_USER}\";" | su - postgres -c psql
+}
+
+function create_mysql_db () {
+  if [ -f "${MY_CNF}" ]; then
+    MYSQL_CREDENTIALS="--defaults-file=${MY_CNF}"
+  else
+    echo -n "Please enter your MySQL root password:"
+    read -p 'Password: ' MYSQL_ROOT_PASS
+    MYSQL_CREDENTIALS="-u root -p${MYSQL_ROOT_PASS}"
+  fi
+
+  echo "# Creating zammad mysql db"
+  mysql ${MYSQL_CREDENTIALS} -e "CREATE DATABASE ${DB} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+
+  echo "# Creating zammad mysql user"
+  mysql ${MYSQL_CREDENTIALS} -e "CREATE USER \"${DB_USER}\"@\"${DB_HOST}\" IDENTIFIED BY \"${DB_PASS}\";"
+
+  echo "# Grant privileges to new mysql user"
+  mysql ${MYSQL_CREDENTIALS} -e "GRANT ALL PRIVILEGES ON ${DB}.* TO \"${DB_USER}\"@\"${DB_HOST}\"; FLUSH PRIVILEGES;"
+}
+
+function update_database_yml () {
+  if [ "${OS}" == "REDHAT" ] || [ "${OS}" == "SUSE" ]; then
+    if [ "${ADAPTER}" == "postgresql" ]; then
+      DB_PASS=""
+    fi
+  fi
+
+  echo "# Updating database.yml"
+  sed -e "s/.*adapter:.*/  adapter: ${ADAPTER}/" \
+    -e "s/.*username:.*/  username: ${DB_USER}/" \
+    -e "s/.*password:.*/  password: ${DB_PASS}/" \
+    -e "s/.*database:.*/  database: ${DB}/" < ${ZAMMAD_DIR}/contrib/packager.io/database.yml.pkgr > ${ZAMMAD_DIR}/config/database.yml
+}
+
+function initialise_database () {
+  zammad run rake db:migrate
+  zammad run rake db:seed
+}
+
+function update_database () {
+  echo "# database.yml found. Updating db..."
+  zammad run rake db:migrate
+}
+
+function update_translations () {
+  echo "# Updating translations..."
+  zammad run rails r 'Locale.sync'
+  zammad run rails r 'Translation.sync'
+}
+
+function create_webserver_config () {
+  if [ "${OS}" == "DEBIAN" ]; then
+    if [ ! -f "${WEBSERVER_CONF}" ]; then
+      if [ -f "/etc/${WEBSERVER}/sites-enabled/zammad.conf" ]; then
+        mv /etc/${WEBSERVER}/sites-enabled/zammad.conf ${WEBSERVER_CONF}
+      else
+        cp ${ZAMMAD_DIR}/contrib/${WEBSERVER}/zammad.conf ${WEBSERVER_CONF}
+      fi
+      ln -s ${WEBSERVER_CONF} /etc/${WEBSERVER}/sites-enabled/zammad.conf
+    fi
+    if [ "${WEBSERVER}" == "apache2" ]; then
+      a2enmod proxy
+      a2enmod proxy_http
+      a2enmod proxy_wstunnel
+    fi
+  else
+    test -f ${WEBSERVER_CONF} || cp ${ZAMMAD_DIR}/contrib/${WEBSERVER}/zammad.conf ${WEBSERVER_CONF}
+  fi
+
+  echo "# Creating webserver bootstart"
+  ${INIT_CMD} enable ${WEBSERVER_CMD}
+
+  echo "# Restarting webserver ${WEBSERVER_CMD}"
+  ${INIT_CMD} restart ${WEBSERVER_CMD}
+}
+
+function setup_elasticsearch () {
+  echo "# Configuring Elasticsearch..."
+
+  ES_CONNECTION="$(zammad run rails r "puts Setting.get('es_url')" 2>> /dev/null)"
+
+  if [ -z "${ES_CONNECTION}" ]; then
+    ES_CONNECTION="http://127.0.0.1:9200"
+  fi
+
+  if [ -n "$(/usr/share/elasticsearch/bin/elasticsearch-plugin list | grep mapper-attachments)" ]; then
+    REBUILD_ES_SEARCHINDEX="yes"
+
+    echo "# Deleting old elasticsearch index..."
+    zammad run rake searchindex:drop
+
+    yes | /usr/share/elasticsearch/bin/elasticsearch-plugin -s remove mapper-attachments
+
+  elif [ -n "$(/usr/share/elasticsearch/bin/elasticsearch-plugin list | grep ingest-attachment)" ]; then
+    yes | /usr/share/elasticsearch/bin/elasticsearch-plugin -s remove ingest-attachment
+  fi
+
+  yes | /usr/share/elasticsearch/bin/elasticsearch-plugin -s install ingest-attachment
+
+  if [ "${ES_CONNECTION}" == "http://127.0.0.1:9200" ]; then
+    ${INIT_CMD} restart elasticsearch
+  else
+    echo -e "\n It seems you're running an external Elasticsearch server on ${ES_CONNECTION}"
+    echo -e "Stopping local elasticsearch server..."
+    ${INIT_CMD} stop elasticsearch
+    echo -e "\n Please get sure to install the 'ingest-attachment' plugin on your Elasticsearch server by:"
+    echo -e "/usr/share/elasticsearch/bin/elasticsearch-plugin -s install ingest-attachment"
+    echo -e "\nAfter this you might need to rebuild the searchindex by:"
+    echo -e "zammad run rake searchindex:rebuild"
+  fi
+}
+
+function elasticsearch_searchindex_rebuild () {
+  zammad run rails r "Setting.set('es_url', \"${ES_CONNECTION}\")"
+
+  if [ "${REBUILD_ES_SEARCHINDEX}" == "yes" ]; then
+    echo "# (Re)building Elasticsearch searchindex..."
+    nohup zammad run rake searchindex:rebuild &> ${ZAMMAD_DIR}/log/searchindex-rebuild.log &
+  fi
+}
+
+function update_or_install () {
+
+  if [ -f ${ZAMMAD_DIR}/config/database.yml ]; then
+    update_database
+
+    update_translations
+  else
+    REBUILD_ES_SEARCHINDEX="yes"
+    create_database_password
+
+    if [ "${ADAPTER}" == "postgresql" ]; then
+      echo "# Installing zammad on postgresql"
+      create_postgresql_db
+    elif [ "${ADAPTER}" == "mysql2" ]; then
+      echo "# Installing zammad on mysql"
+      create_mysql_db
+    fi
+
+    update_database_yml
+
+    initialise_database
+  fi
+
+  setup_elasticsearch
+
+  elasticsearch_searchindex_rebuild
+}
+
+function set_env_vars () {
+  zammad config:set RUBY_GC_MALLOC_LIMIT=${ZAMMAD_RUBY_GC_MALLOC_LIMIT:=1077216}
+  zammad config:set RUBY_GC_MALLOC_LIMIT_MAX=${ZAMMAD_RUBY_GC_MALLOC_LIMIT_MAX:=2177216}
+  zammad config:set RUBY_GC_OLDMALLOC_LIMIT=${ZAMMAD_RUBY_GC_OLDMALLOC_LIMIT:=2177216}
+  zammad config:set RUBY_GC_OLDMALLOC_LIMIT_MAX=${ZAMMAD_RUBY_GC_OLDMALLOC_LIMIT_MAX:=3000100}
+}
+
+function final_message () {
+  echo -e "####################################################################################"
+  echo -e "\nAdd your fully qualified domain name or public IP to servername directive of"
+  echo -e "${WEBSERVER}, if this installation is done on a remote server. You have to change:"
+  echo -e "${WEBSERVER_CONF} and restart ${WEBSERVER_CMD} process."
+  echo -e "Otherwise just open http://localhost/ in your browser to start using Zammad.\n"
+  if [ "${OS}" == "REDHAT" ]; then
+    echo -e "\n Remember to enable selinux and firewall rules!\n"
+    echo -e "Use the following commands:"
+    echo -e "	setsebool httpd_can_network_connect on -P"
+    echo -e "	firewall-cmd --zone=public --add-service=http --permanent"
+    echo -e "	firewall-cmd --zone=public --add-service=https --permanent"
+    echo -e "	firewall-cmd --reload\n"
+  elif [ "${OS}" == "SUSE" ]; then
+    echo -e "\n Make sure that the firewall is not blocking port 80 & 443!\n"
+    echo -e "Use 'yast firewall' or 'SuSEfirewall2' commands to configure it"
+  fi
+  echo -e "####################################################################################"
+}
